@@ -1,4 +1,4 @@
-import React, { PureComponent } from 'react'
+import React, { PureComponent, Fragment } from 'react'
 
 import Swap from 'swap.swap'
 import SwapApp from 'swap.app'
@@ -45,6 +45,8 @@ export default class SwapComponent extends PureComponent {
   state = {
     swap: null,
     isMy: false,
+    isDeleted: true,
+    hideAll: false,
     ethBalance: null,
     currencyData: null,
     isAmountMore: null,
@@ -60,7 +62,7 @@ export default class SwapComponent extends PureComponent {
 
   componentWillMount() {
     const { items, tokenItems, intl: { locale } } = this.props
-    let { match : { params : { orderId } }, history } = this.props
+    let { match : { params : { orderId } }, history, location: { pathname } } = this.props
 
     if (!orderId) {
       history.push(localisedUrl(links.exchange))
@@ -104,6 +106,7 @@ export default class SwapComponent extends PureComponent {
         SwapComponent,
         currencyData,
         ethAddress: ethData[0].address,
+        stepToHide: swap.sellCurrency === 'BTC' ? 5 : 4,
       })
 
     } catch (error) {
@@ -111,12 +114,15 @@ export default class SwapComponent extends PureComponent {
       actions.notifications.show(constants.notifications.ErrorNotification, { error: 'Sorry, but this order do not exsit already' })
       this.props.history.push(localisedUrl(links.exchange))
     }
+    this.saveThisSwap(orderId, pathname)
     this.setSaveSwapId(orderId)
   }
 
   componentDidMount() {
-    const { swap: { flow: { state: { canCreateEthTransaction, requireWithdrawFeeSended } } }, continueSwap } = this.state
+    const { swap: { id, flow: { state: { canCreateEthTransaction, requireWithdrawFeeSended, isFinished } } }, continueSwap } = this.state
+
     if (this.state.swap !== null) {
+      this.state.swap.room.once('stop swap', this.receiveMessage)
 
       setTimeout(() => {
         if (!canCreateEthTransaction && continueSwap && requireWithdrawFeeSended) {
@@ -129,6 +135,65 @@ export default class SwapComponent extends PureComponent {
         this.requestingWithdrawFee()
         this.isBalanceEnough()
       }, 5000)
+    }
+    if (isFinished) {
+      this.deleteThisSwap(this.props.location.pathname)
+    }
+  }
+
+  saveThisSwap = (orderId, pathname) => {
+    actions.core.rememberOrder(pathname, orderId)
+  }
+
+  deleteThisSwap = (id, pathname) => {
+    actions.core.forgetOrders(pathname)
+    if (this.props.peer === this.state.swap.owner.peer) {
+      actions.core.removeOrder(id)
+    }
+  }
+
+  cancelSwapBtc = () => {
+    let { match : { params : { orderId } }, history, location: { pathname }, intl: { locale } } = this.props
+    const { swap: { flow: { state: { step } }, sellCurrency }, swap } = this.state
+
+    this.state.swap.flow.isClosed()
+
+    if (step < 2) {
+      this.deleteThisSwap(orderId, pathname)
+      history.push(localisedUrl(locale, '/'))
+    }
+    if (step <= 5 && step >= 2) {
+      swap.flow.getRefundTxHex()
+      this.deleteThisSwap(orderId, pathname)
+      this.setState(() => ({
+        hideAll: true,
+      }))
+    }
+  }
+
+  cancelSwap = () => {
+    let { match : { params : { orderId } }, history, location: { pathname }, intl: { locale } } = this.props
+    const { swap: { flow: { state: { step } }, sellCurrency } } = this.state
+
+    this.state.swap.flow.isClosed()
+
+    if (step <= 4) {
+      this.deleteThisSwap(orderId, pathname)
+    }
+
+    setTimeout(() => {
+      history.push(localisedUrl(locale, '/'))
+    }, 10 * 1000)
+  }
+
+  receiveMessage = () => {
+    this.setState({
+      isDeleted: true,
+    })
+    if (this.state.swap.sellCurrency === 'BTC') {
+      this.cancelSwapBtc()
+    } else {
+      this.cancelSwap()
     }
   }
 
@@ -241,42 +306,81 @@ export default class SwapComponent extends PureComponent {
       isShowingBitcoinScript: !this.state.isShowingBitcoinScript,
     })
   }
+  sr = () => {
+    this.setState({
+      isDeleted: false,
+    })
+  }
 
   render() {
     const { peer, tokenItems, history } = this.props
     const {
-      swap, SwapComponent, currencyData, isAmountMore, ethData, continueSwap, enoughBalance,
-      depositWindow, ethAddress, isShowingBitcoinScript, requestToFaucetSended,
+      swap, SwapComponent, currencyData, isAmountMore, ethData, continueSwap, enoughBalance, hideAll, hex,
+      depositWindow, ethAddress, isShowingBitcoinScript, requestToFaucetSended, stepToHide, isDeleted,
     } = this.state
 
     if (!swap || !SwapComponent || !peer || !isAmountMore) {
       return null
     }
-
     const isFinished = (swap.flow.state.step >= (swap.flow.steps.length - 1))
 
     return (
-      <div styleName="swap">
-        <SwapComponent
-          tokenItems={tokenItems}
-          depositWindow={depositWindow}
-          disabledTimer={isAmountMore === 'enable'}
-          history={history}
-          swap={swap}
-          ethAddress={ethAddress}
-          currencyData={currencyData}
-          styles={styles}
-          enoughBalance={enoughBalance}
-          ethData={ethData}
-          continueSwap={continueSwap}
-          requestToFaucetSended={requestToFaucetSended}
-        >
-          <Share flow={swap.flow} />
-          <EmergencySave flow={swap.flow} />
-          <ShowBtcScript onClick={this.toggleBitcoinScript} btcScriptValues={swap.flow.state.btcScriptValues} isShowingBitcoinScript={isShowingBitcoinScript} />
-          {peer === swap.owner.peer && (<DeleteSwapAfterEnd swap={swap} />)}
-        </SwapComponent>
-      </div>
+      <Fragment>
+        {hideAll ?
+          <div>
+            <h3>
+              <FormattedMessage id="swappropgress327" defaultMessage="One of Participant canceled this swap" />
+            </h3>
+            {swap.flow.state.refundTxHex &&
+              <div>
+                <a
+                  href="https://wiki.swap.online/faq/my-swap-got-stuck-and-my-bitcoin-has-been-withdrawn-what-to-do/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  <FormattedMessage id="swappropgress332" defaultMessage="How refund your money ?" />
+                </a>
+                <FormattedMessage id="swappropgress333" defaultMessage="Refund hex transaction: " />
+                <code>{swap.flow.state.refundTxHex}</code>
+              </div>
+            }
+          </div> :
+          <div>
+            {isDeleted ?
+              <div>
+                <h3>
+                  <FormattedMessage id="swappropgress327" defaultMessage="Participant cancel the swap" />
+                </h3>
+              </div> :
+              <div styleName="swap">
+                <SwapComponent
+                  tokenItems={tokenItems}
+                  depositWindow={depositWindow}
+                  disabledTimer={isAmountMore === 'enable'}
+                  history={history}
+                  swap={swap}
+                  ethAddress={ethAddress}
+                  currencyData={currencyData}
+                  styles={styles}
+                  enoughBalance={enoughBalance}
+                  ethData={ethData}
+                  continueSwap={continueSwap}
+                  requestToFaucetSended={requestToFaucetSended}
+                >
+                  {swap.flow.state.step <= stepToHide &&
+                    <a onClick={swap.sellCurrency === 'BTC' ? this.cancelSwapBtc : this.cancelSwap}>
+                      <FormattedMessage id="swapjs290" defaultMessage="Cancel swap" />
+                    </a>
+                  }
+                  <Share flow={swap.flow} />
+                  <EmergencySave flow={swap.flow} />
+                  <ShowBtcScript onClick={this.toggleBitcoinScript} btcScriptValues={swap.flow.state.btcScriptValues} isShowingBitcoinScript={isShowingBitcoinScript} />
+                </SwapComponent>
+              </div>
+            }
+          </div>
+        }
+      </Fragment>
     )
   }
 }

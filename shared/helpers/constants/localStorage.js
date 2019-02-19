@@ -2,6 +2,7 @@ export default {
   enter: 'enter',
   reject: 'reject',
   firstStart: 'firstStart',
+  savedOrders: 'savedOrders',
   isWidgetDataSend: 'isWidgetDataSend',
   activeTabId: 'activeTabId',
   testnetSkip: 'testnetSkip',

@@ -42,6 +42,21 @@ const declineRequest = (orderId, participantPeer) => {
   order.declineRequest(participantPeer)
 }
 
+const rememberOrder = (link, orderId) => {
+  reducers.rememberedOrders.savedOrders(link, orderId)
+  localStorage.setItem(constants.localStorage.savedOrders, JSON.stringify(getState().rememberedOrders.savedOrders))
+  return {
+    link,
+    orderId,
+  }
+}
+
+const forgetOrders = (link) => {
+  reducers.rememberedOrders.forgetOrders(link)
+  localStorage.setItem(constants.localStorage.savedOrders, JSON.stringify(getState().rememberedOrders.savedOrders))
+}
+
+
 const removeOrder = (orderId) => {
   SwapApp.shared().services.orders.remove(orderId)
   actions.feed.deleteItemToFeed(orderId)
@@ -205,6 +220,8 @@ const markCoinAsVisible = (coin) => {
 }
 
 export default {
+  rememberOrder,
+  forgetOrders,
   getSwapById,
   getOrders,
   setFilter,
