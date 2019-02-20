@@ -44,9 +44,15 @@ const declineRequest = (orderId, participantPeer) => {
 
 const rememberOrder = (orderId) => {
   reducers.rememberedOrders.savedOrders(orderId)
-  localStorage.setItem(constants.localStorage.savedOrders, JSON.stringify(getState().rememberedOrders.savedOrders))
   return {
     orderId,
+  }
+}
+
+const rememberSwap = (swap) => {
+  reducers.rememberedSwaps.saveSwap(swap)
+  return {
+    swap,
   }
 }
 
@@ -220,6 +226,7 @@ const markCoinAsVisible = (coin) => {
 
 export default {
   rememberOrder,
+  rememberSwap,
   forgetOrders,
   getSwapById,
   getOrders,

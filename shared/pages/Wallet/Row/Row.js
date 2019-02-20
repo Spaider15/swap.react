@@ -176,14 +176,6 @@ export default class Row extends Component {
     actions.modals.open(constants.modals.EosRegister, {})
   }
 
-  handleDeclineOrdersModalOpen = (declineOrder, orders, currency) => {
-    actions.modals.open(constants.modals.DeclineOrdersModal, {
-      declineOrder,
-      orders,
-      currency,
-    })
-  }
-
   handleTelosChangeAccount = () => {
     actions.modals.open(constants.modals.TelosChangeAccount, {})
   }
@@ -238,15 +230,15 @@ export default class Row extends Component {
   }
 
   handleGoTrade = (currency) => {
+    const { intl: { locale } } = this.props
+    const orders = SwapApp.shared().services.orders.items
     for (let i = 0; i <= this.props.decline.length; i++) {
-      this.declineOrder(i, currency)
+      this.getSwap(i, currency, locale, orders)
     }
   }
 
-  declineOrder = (i, currency) => {
-    const { intl: { locale } } = this.props
+  getSwap = (i, currency, locale, orders) => {
     const pair = currency.toLowerCase() === 'btc' ? 'eth' : 'btc'
-    const orders = SwapApp.shared().services.orders.items
 
     const declineOrder = orders
       .filter(order => order.id === this.props.decline[i])
@@ -258,6 +250,14 @@ export default class Row extends Component {
       window.scrollTo(0, 0)
       this.props.history.push(localisedUrl(locale, `/exchange/${currency.toLowerCase()}-to-${pair}`))
     }
+  }
+
+  handleDeclineOrdersModalOpen = (declineOrder, orders, currency) => {
+    actions.modals.open(constants.modals.DeclineOrdersModal, {
+      declineOrder,
+      orders,
+      currency,
+    })
   }
 
   handleMarkCoinAsHidden = (coin) => {

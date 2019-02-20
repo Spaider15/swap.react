@@ -18,8 +18,8 @@ const FourthStep = ({ step, swap, seventh, eighth }) => {
       <span styleName="stepNumber">{step >= currencyStep ? <i className="fas fa-check" /> : 4}</span>
       <p styleName="stepText">
         <FormattedMessage
-          id="BtcToEthToken123"
-          defaultMessage="The swap is finish!" />
+          id="completed21"
+          defaultMessage="is completed!" />
       </p>
     </div>
   )

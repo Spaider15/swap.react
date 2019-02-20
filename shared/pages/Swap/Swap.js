@@ -32,11 +32,13 @@ const isWidgetBuild = config && config.isWidget
 @connect(({
   user: { ethData, btcData, /* bchData, */ tokensData, eosData, telosData, nimData, usdtData, ltcData },
   ipfs: { peer },
+  rememberedSwaps,
 }) => ({
   items: [ ethData, btcData, eosData, telosData, /* bchData, */ ltcData, usdtData /* nimData */ ],
   tokenItems: [ ...Object.keys(tokensData).map(k => (tokensData[k])) ],
   errors: 'api.errors',
   checked: 'api.checked',
+  rememberedSwaps,
   peer,
 }))
 
@@ -46,7 +48,6 @@ export default class SwapComponent extends PureComponent {
   state = {
     swap: null,
     isMy: false,
-    isDeleted: false,
     hideAll: false,
     ethBalance: null,
     currencyData: null,
@@ -140,6 +141,7 @@ export default class SwapComponent extends PureComponent {
     if (isFinished) {
       this.deleteThisSwap(this.props.location.pathname)
     }
+    this.getSwap()
   }
 
   saveThisSwap = (orderId, pathname) => {
@@ -163,7 +165,7 @@ export default class SwapComponent extends PureComponent {
       this.deleteThisSwap(orderId, pathname)
       history.push(localisedUrl(locale, '/'))
     }
-    if (step <= 5 && step >= 2) {
+    if (step >= 2 && step <= 5) {
       swap.flow.getRefundTxHex()
       this.deleteThisSwap(orderId, pathname)
       this.setState(() => ({
@@ -181,15 +183,11 @@ export default class SwapComponent extends PureComponent {
     if (step <= 4) {
       this.deleteThisSwap(orderId, pathname)
     }
-
-    setTimeout(() => {
-      history.push(localisedUrl(locale, '/'))
-    }, 10 * 1000)
   }
 
   receiveMessage = () => {
     this.setState({
-      isDeleted: true,
+      hideAll: true,
     })
     if (this.state.swap.sellCurrency === 'BTC') {
       this.cancelSwapBtc()
@@ -308,18 +306,23 @@ export default class SwapComponent extends PureComponent {
     })
   }
 
+  getSwap = () => {
+    let { match : { params : { orderId } }, history, location: { pathname }, intl: { locale }, rememberedSwaps } = this.props
+    actions.core.rememberSwap(this.state.swap)
+    localStorage.setItem(constants.localStorage.saveSwap, rememberedSwaps)
+  }
+
   render() {
     const { peer, tokenItems, history, intl: { locale } } = this.props
     const {
-      swap, SwapComponent, currencyData, isAmountMore, ethData, continueSwap, enoughBalance, hideAll, hex,
-      depositWindow, ethAddress, isShowingBitcoinScript, requestToFaucetSended, stepToHide, isDeleted,
+      swap, SwapComponent, currencyData, isAmountMore, ethData, continueSwap, enoughBalance, hideAll,
+      depositWindow, ethAddress, isShowingBitcoinScript, requestToFaucetSended, stepToHide,
     } = this.state
-
+    console.log('swap', swap.flow)
     if (!swap || !SwapComponent || !peer || !isAmountMore) {
       return null
     }
     const isFinished = (swap.flow.state.step >= (swap.flow.steps.length - 1))
-
     return (
       <Fragment>
         {hideAll ?
@@ -334,7 +337,7 @@ export default class SwapComponent extends PureComponent {
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  <FormattedMessage id="swappropgress332" defaultMessage="How refund your money ?" />
+                  <FormattedMessage id="swappropgress332" defaultMessage="How to refund your money ?" />
                 </a>
                 {' '}
                 <p>
@@ -353,39 +356,30 @@ export default class SwapComponent extends PureComponent {
               </h3>
             }
           </div> :
-          <div>
-            {isDeleted ?
-              <div>
-                <h3 styleName="canceled" /* eslint-disable-line */ onClick={() => history.push(localisedUrl(locale, '/'))}>
-                  <FormattedMessage id="swappropgress327" defaultMessage="this Swap is canceled" />
-                </h3>
-              </div> :
-              <div styleName="swap">
-                <SwapComponent
-                  tokenItems={tokenItems}
-                  depositWindow={depositWindow}
-                  disabledTimer={isAmountMore === 'enable'}
-                  history={history}
-                  swap={swap}
-                  ethAddress={ethAddress}
-                  currencyData={currencyData}
-                  styles={styles}
-                  enoughBalance={enoughBalance}
-                  ethData={ethData}
-                  continueSwap={continueSwap}
-                  requestToFaucetSended={requestToFaucetSended}
-                >
-                  {swap.flow.state.step <= stepToHide &&
-                    <h1 /* eslint-disable-line */ onClick={swap.sellCurrency === 'BTC' ? this.cancelSwapBtc : this.cancelSwap} styleName="cancelSwap">
-                      <FormattedMessage id="swapjs290" defaultMessage="Cancel swap" />
-                    </h1>
-                  }
-                  <Share flow={swap.flow} />
-                  <EmergencySave flow={swap.flow} />
-                  <ShowBtcScript onClick={this.toggleBitcoinScript} btcScriptValues={swap.flow.state.btcScriptValues} isShowingBitcoinScript={isShowingBitcoinScript} />
-                </SwapComponent>
-              </div>
-            }
+          <div styleName="swap">
+            <SwapComponent
+              tokenItems={tokenItems}
+              depositWindow={depositWindow}
+              disabledTimer={isAmountMore === 'enable'}
+              history={history}
+              swap={swap}
+              ethAddress={ethAddress}
+              currencyData={currencyData}
+              styles={styles}
+              enoughBalance={enoughBalance}
+              ethData={ethData}
+              continueSwap={continueSwap}
+              requestToFaucetSended={requestToFaucetSended}
+            >
+              {swap.flow.state.step <= stepToHide &&
+                <h1 /* eslint-disable-line */ onClick={swap.sellCurrency === 'BTC' ? this.cancelSwapBtc : this.cancelSwap} styleName="cancelSwap">
+                  <FormattedMessage id="swapjs290" defaultMessage="Cancel swap" />
+                </h1>
+              }
+              <Share flow={swap.flow} />
+              <EmergencySave flow={swap.flow} />
+              <ShowBtcScript onClick={this.toggleBitcoinScript} btcScriptValues={swap.flow.state.btcScriptValues} isShowingBitcoinScript={isShowingBitcoinScript} />
+            </SwapComponent>
           </div>
         }
       </Fragment>

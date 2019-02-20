@@ -3639,17 +3639,11 @@
   },
   {
     "id": "PartialClosureTitleTag",
-    "message": "Обмен {full_name1} ({ticker_name1}) на {full_name2} ({ticker_name2}) Атомарный Обмен за 60 секунд",
-    "files": [
-      "shared/pages/PartialClosure/PartialClosure.js"
-    ]
+    "message": "Обмен {full_name1} ({ticker_name1}) на {full_name2} ({ticker_name2}) Атомарный Обмен за 60 секунд"
   },
   {
     "id": "PartialClosureMetaDescrTag",
-    "message": "Децентрализированный обменник Swap.Online предлагает вам лучший курс обмена {full_name1} ({ticker_name1}) на {full_name2} ({ticker_name2}). Онлайн кошелек без регистрации.",
-    "files": [
-      "shared/pages/PartialClosure/PartialClosure.js"
-    ]
+    "message": "Децентрализированный обменник Swap.Online предлагает вам лучший курс обмена {full_name1} ({ticker_name1}) на {full_name2} ({ticker_name2}). Онлайн кошелек без регистрации."
   },
   {
     "id": "orders104",
@@ -3791,10 +3785,7 @@
   },
   {
     "id": "deposit213",
-    "message": " и 0.002 ETH на gas fee ",
-    "files": [
-      "shared/pages/Swap/DepositWindow/DepositWindow.js"
-    ]
+    "message": " и 0.002 ETH на gas fee "
   },
   {
     "id": "deposit165",
@@ -3999,10 +3990,7 @@
   },
   {
     "id": "BtcToEthToken123",
-    "message": "Свап завершен!",
-    "files": [
-      "shared/pages/Swap/SwapList/steps/FourthStep.js"
-    ]
+    "message": "Свап завершен!"
   },
   {
     "id": "BtcToEthToken132",
@@ -4010,10 +3998,7 @@
   },
   {
     "id": "BtcToEthToken34",
-    "message": "Процесс подтверждения",
-    "files": [
-      "shared/pages/Swap/SwapList/steps/FirstStep.js"
-    ]
+    "message": "Процесс подтверждения"
   },
   {
     "id": "BtcToEthToken43",
@@ -4082,13 +4067,14 @@
     "id": "swappropgress332",
     "message": "Как вернуть ваши средства ?",
     "files": [
-      "shared/pages/Swap/SwapProgress/SwapProgress.js"
+      "shared/pages/Swap/Swap.js"
     ]
   },
   {
     "id": "swappropgress333",
     "message": "Транзакция возврата:",
     "files": [
+      "shared/pages/Swap/Swap.js",
       "shared/pages/Swap/SwapProgress/SwapProgress.js"
     ]
   },
@@ -4519,6 +4505,76 @@
     "message": "Отправка",
     "files": [
       "shared/pages/Swap/SwapList/steps/ThirdStep.js"
+    ]
+  },
+  {
+    "id": "decline 21",
+    "message": "Отмененые ордера!",
+    "files": [
+      "shared/components/modals/DeclineOrdersModal/DeclineOrdersModal.js"
+    ]
+  },
+  {
+    "id": "decline43",
+    "message": "Приносим свои извинения, но вы не можете начать новый своп, пока не завершите начатые ранее свопы",
+    "files": [
+      "shared/components/modals/DeclineOrdersModal/DeclineOrdersModal.js"
+    ]
+  },
+  {
+    "id": "decline49",
+    "message": "Перейти к незавершенным свопам",
+    "files": [
+      "shared/components/modals/DeclineOrdersModal/DeclineOrdersModal.js"
+    ]
+  },
+  {
+    "id": "deposit165widget",
+    "message": "Скопируйте адрес ниже и пополните его на рекомендуемую сумму {missingBalance}",
+    "files": [
+      "shared/pages/Swap/DepositWindow/DepositWindow.js"
+    ]
+  },
+  {
+    "id": "swapjs290",
+    "message": "Отменить обмен",
+    "files": [
+      "shared/pages/Swap/Swap.js"
+    ]
+  },
+  {
+    "id": "swappropgress327",
+    "message": "Этот обмен отменен",
+    "files": [
+      "shared/pages/Swap/Swap.js"
+    ]
+  },
+  {
+    "id": "swappropgress345",
+    "message": "Создается транзакция возврата {loader}",
+    "files": [
+      "shared/pages/Swap/Swap.js"
+    ]
+  },
+  {
+    "id": "completed21",
+    "message": "Заверешено!",
+    "files": [
+      "shared/pages/Swap/SwapList/steps/FourthStep.js"
+    ]
+  },
+  {
+    "id": "Confirmation14",
+    "message": "Подтверждение",
+    "files": [
+      "shared/pages/Swap/SwapList/steps/FirstStep.js"
+    ]
+  },
+  {
+    "id": "swappropgress192",
+    "message": "Как вернуть ваши даньги ?",
+    "files": [
+      "shared/pages/Swap/SwapProgress/SwapProgress.js"
     ]
   }
 ]

@@ -41,11 +41,11 @@ export default class DeclineOrdersModal extends Component {
     return (
       <Modal name="DeclineOrdersModal" title={intl.formatMessage(title.downloadModal)}>
         <div styleName="subTitle">
-          <FormattedMessage id="decline43" defaultMessage="Sorry, but you have incomplete swaps, you cannot start a new swap until you close the unfinished " />
+          <FormattedMessage id="decline43" defaultMessage="Sorry, but you have cannot start until you complete the swaps started earlier " />
         </div>
-        <h1 /* eslint-disable-line */ styleName="link" onClick={this.goToDecline}>
-          <FormattedMessage id="decline49" defaultMessage="Link to uncomplete swap" />
-        </h1>
+        <h2 /* eslint-disable-line */ styleName="link" onClick={this.goToDecline}>
+          <FormattedMessage id="decline49" defaultMessage="See your incomplete swap" />
+        </h2>
       </Modal>
 
     )

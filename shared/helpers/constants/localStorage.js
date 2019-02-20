@@ -3,6 +3,7 @@ export default {
   reject: 'reject',
   firstStart: 'firstStart',
   savedOrders: 'savedOrders',
+  saveSwap: 'saveSwap',
   didWidgetDataSend: 'didWidgetDataSend',
   activeTabId: 'activeTabId',
   testnetSkip: 'testnetSkip',

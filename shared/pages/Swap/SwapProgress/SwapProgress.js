@@ -189,7 +189,7 @@ export default class SwapProgress extends Component {
                     target="_blank"
                     rel="noopener noreferrer"
                   >
-                    <FormattedMessage id="swappropgress332" defaultMessage="How refund your money ?" />
+                    <FormattedMessage id="swappropgress192" defaultMessage="How to refund your money ?" />
                   </a>
                   <FormattedMessage id="swappropgress333" defaultMessage="Refund hex transaction: " />
                   <code> {flow.refundTxHex} </code>
