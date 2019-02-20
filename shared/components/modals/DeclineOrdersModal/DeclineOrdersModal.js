@@ -39,11 +39,11 @@ export default class DeclineOrdersModal extends Component {
     const { intl: { locale }, data: { declineOrder }, intl } = this.props
 
     return (
-      <Modal name='DeclineOrdersModal' title={intl.formatMessage(title.downloadModal)}>
+      <Modal name="DeclineOrdersModal" title={intl.formatMessage(title.downloadModal)}>
         <div styleName="subTitle">
           <FormattedMessage id="decline43" defaultMessage="Sorry, but you have incomplete swaps, you cannot start a new swap until you close the unfinished " />
         </div>
-        <h1 styleName="link" onClick={this.goToDecline}>
+        <h1 /* eslint-disable-line */ styleName="link" onClick={this.goToDecline}>
           <FormattedMessage id="decline49" defaultMessage="Link to uncomplete swap" />
         </h1>
       </Modal>

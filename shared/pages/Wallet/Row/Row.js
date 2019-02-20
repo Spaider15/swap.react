@@ -238,7 +238,7 @@ export default class Row extends Component {
   }
 
   handleGoTrade = (currency) => {
-    for (let i = 0; i < this.props.decline.length; i++) {
+    for (let i = 0; i <= this.props.decline.length; i++) {
       this.declineOrder(i, currency)
     }
   }
