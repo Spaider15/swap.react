@@ -21,12 +21,13 @@ import ReactTooltip from 'react-tooltip'
 import { FormattedMessage, injectIntl } from 'react-intl'
 import CurrencyButton from 'components/controls/CurrencyButton/CurrencyButton'
 import { relocalisedUrl, localisedUrl } from 'helpers/locale'
-
+import SwapApp from 'swap.app'
 
 @injectIntl
 @withRouter
 @connect(
   ({
+    rememberedOrders,
     user: { ethData, btcData, /* bchData, */ tokensData, eosData, /* xlmData, */ telosData, nimData, usdtData, ltcData },
     currencies: { items: currencies },
   }, { currency }) => ({
@@ -44,6 +45,7 @@ import { relocalisedUrl, localisedUrl } from 'helpers/locale'
     ].map(({ account, keyPair, ...data }) => ({
       ...data,
     })).find((item) => item.currency === currency),
+    decline: rememberedOrders.savedOrders,
   })
 )
 
@@ -59,6 +61,7 @@ export default class Row extends Component {
     isBalanceEmpty: true,
     telosRegister: false,
     showButtons: false,
+    existUnfinished: false,
   }
 
   static getDerivedStateFromProps({ item: { balance } }) {
@@ -173,6 +176,14 @@ export default class Row extends Component {
     actions.modals.open(constants.modals.EosRegister, {})
   }
 
+  handleDeclineOrdersModalOpen = (declineOrder, orders, currency) => {
+    actions.modals.open(constants.modals.DeclineOrdersModal, {
+      declineOrder,
+      orders,
+      currency,
+    })
+  }
+
   handleTelosChangeAccount = () => {
     actions.modals.open(constants.modals.TelosChangeAccount, {})
   }
@@ -227,11 +238,26 @@ export default class Row extends Component {
   }
 
   handleGoTrade = (currency) => {
+    for (let i = 0; i < this.props.decline.length; i++) {
+      this.declineOrder(i, currency)
+    }
+  }
+
+  declineOrder = (i, currency) => {
     const { intl: { locale } } = this.props
     const pair = currency.toLowerCase() === 'btc' ? 'eth' : 'btc'
+    const orders = SwapApp.shared().services.orders.items
 
-    window.scrollTo(0, 0)
-    this.props.history.push(localisedUrl(locale, `/exchange/${currency.toLowerCase()}-to-${pair}`))
+    const declineOrder = orders
+      .filter(order => order.id === this.props.decline[i])
+      .filter(order => order.sellCurrency === currency.toUpperCase())[0]
+
+    if (declineOrder) {
+      this.handleDeclineOrdersModalOpen(declineOrder, orders, currency)
+    } else {
+      window.scrollTo(0, 0)
+      this.props.history.push(localisedUrl(locale, `/exchange/${currency.toLowerCase()}-to-${pair}`))
+    }
   }
 
   handleMarkCoinAsHidden = (coin) => {
@@ -269,6 +295,10 @@ export default class Row extends Component {
     this.setState(() => ({
       showButtons: false,
     }))
+  }
+
+  deleteThisSwap = () => {
+    actions.core.forgetOrders(this.props.decline[0])
   }
 
   render() {

@@ -21,6 +21,7 @@ import { Button } from 'components/controls'
 import FeeControler from './FeeControler/FeeControler'
 import DepositWindow from './DepositWindow/DepositWindow'
 import ShowBtcScript from './ShowBtcScript/ShowBtcScript'
+import InlineLoader from 'components/loaders/InlineLoader/InlineLoader'
 
 import config from 'app-config'
 
@@ -45,7 +46,7 @@ export default class SwapComponent extends PureComponent {
   state = {
     swap: null,
     isMy: false,
-    isDeleted: true,
+    isDeleted: false,
     hideAll: false,
     ethBalance: null,
     currencyData: null,
@@ -114,7 +115,7 @@ export default class SwapComponent extends PureComponent {
       actions.notifications.show(constants.notifications.ErrorNotification, { error: 'Sorry, but this order do not exsit already' })
       this.props.history.push(localisedUrl(links.exchange))
     }
-    this.saveThisSwap(orderId, pathname)
+    this.saveThisSwap(orderId)
     this.setSaveSwapId(orderId)
   }
 
@@ -142,11 +143,11 @@ export default class SwapComponent extends PureComponent {
   }
 
   saveThisSwap = (orderId, pathname) => {
-    actions.core.rememberOrder(pathname, orderId)
+    actions.core.rememberOrder(orderId)
   }
 
-  deleteThisSwap = (id, pathname) => {
-    actions.core.forgetOrders(pathname)
+  deleteThisSwap = (id) => {
+    actions.core.forgetOrders(id)
     if (this.props.peer === this.state.swap.owner.peer) {
       actions.core.removeOrder(id)
     }
@@ -306,14 +307,9 @@ export default class SwapComponent extends PureComponent {
       isShowingBitcoinScript: !this.state.isShowingBitcoinScript,
     })
   }
-  sr = () => {
-    this.setState({
-      isDeleted: false,
-    })
-  }
 
   render() {
-    const { peer, tokenItems, history } = this.props
+    const { peer, tokenItems, history, intl: { locale } } = this.props
     const {
       swap, SwapComponent, currencyData, isAmountMore, ethData, continueSwap, enoughBalance, hideAll, hex,
       depositWindow, ethAddress, isShowingBitcoinScript, requestToFaucetSended, stepToHide, isDeleted,
@@ -328,10 +324,10 @@ export default class SwapComponent extends PureComponent {
       <Fragment>
         {hideAll ?
           <div>
-            <h3>
-              <FormattedMessage id="swappropgress327" defaultMessage="One of Participant canceled this swap" />
+            <h3 styleName="canceled" /* eslint-disable-line */ onClick={() => history.push(localisedUrl(locale, '/'))}>
+              <FormattedMessage id="swappropgress327" defaultMessage="this Swap is canceled" />
             </h3>
-            {swap.flow.state.refundTxHex &&
+            {swap.flow.state.refundTxHex ?
               <div>
                 <a
                   href="https://wiki.swap.online/faq/my-swap-got-stuck-and-my-bitcoin-has-been-withdrawn-what-to-do/"
@@ -340,16 +336,28 @@ export default class SwapComponent extends PureComponent {
                 >
                   <FormattedMessage id="swappropgress332" defaultMessage="How refund your money ?" />
                 </a>
-                <FormattedMessage id="swappropgress333" defaultMessage="Refund hex transaction: " />
+                {' '}
+                <p>
+                  <FormattedMessage id="swappropgress333" defaultMessage="Refund hex transaction: " />
+                </p>
                 <code>{swap.flow.state.refundTxHex}</code>
-              </div>
+              </div> :
+              <h3 styleName="refHex">
+                <FormattedMessage
+                  id="swappropgress345"
+                  defaultMessage="Refund transaction is creating {loader}"
+                  values={{
+                    loader: <a styleName="loaderHolder"><InlineLoader /></a>,
+                  }}
+                />
+              </h3>
             }
           </div> :
           <div>
             {isDeleted ?
               <div>
-                <h3>
-                  <FormattedMessage id="swappropgress327" defaultMessage="Participant cancel the swap" />
+                <h3 styleName="canceled" /* eslint-disable-line */ onClick={() => history.push(localisedUrl(locale, '/'))}>
+                  <FormattedMessage id="swappropgress327" defaultMessage="this Swap is canceled" />
                 </h3>
               </div> :
               <div styleName="swap">
@@ -368,9 +376,9 @@ export default class SwapComponent extends PureComponent {
                   requestToFaucetSended={requestToFaucetSended}
                 >
                   {swap.flow.state.step <= stepToHide &&
-                    <a onClick={swap.sellCurrency === 'BTC' ? this.cancelSwapBtc : this.cancelSwap}>
+                    <h1 /* eslint-disable-line */ onClick={swap.sellCurrency === 'BTC' ? this.cancelSwapBtc : this.cancelSwap} styleName="cancelSwap">
                       <FormattedMessage id="swapjs290" defaultMessage="Cancel swap" />
-                    </a>
+                    </h1>
                   }
                   <Share flow={swap.flow} />
                   <EmergencySave flow={swap.flow} />

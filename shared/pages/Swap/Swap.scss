@@ -30,6 +30,30 @@
   font-weight: bold;
 }
 
+.canceled {
+  color: #e32950;
+  font-size: 24px;
+  text-align: center;
+  text-transform: uppercase;
+  padding: 78px;
+  position: relative;
+  cursor: pointer;
+}
+
+.cancelSwap {
+  color: red;
+  text-decoration: underline;
+  margin: -200px 655px;
+  position: absolute;
+  font-size: 17px;
+  width: 100px;
+  cursor: pointer;
+}
+
+.refHex {
+  text-align: center;
+}
+
 .included {
   margin-left: 5%;
   top: -4px;

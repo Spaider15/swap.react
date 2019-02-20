@@ -2,7 +2,6 @@ const initialState = {
   savedOrders: JSON.parse(localStorage.getItem('savedOrders')) || [],
 }
 
-
 const savedOrders = (state, payload) => ({
   savedOrders: [
     ...state.savedOrders,
