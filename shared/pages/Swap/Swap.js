@@ -57,6 +57,7 @@ export default class SwapComponent extends PureComponent {
     enoughBalance: true,
     depositWindow: false,
     isShowingBitcoinScript: false,
+    isShowDevInformation: false,
     shouldStopCheckSendingOfRequesting: false,
   }
 
@@ -300,9 +301,10 @@ export default class SwapComponent extends PureComponent {
     }
   }
 
-  toggleBitcoinScript = () => {
+  toggleInfo = (a, b) => {
     this.setState({
-      isShowingBitcoinScript: !this.state.isShowingBitcoinScript,
+      isShowDevInformation: !a,
+      isShowingBitcoinScript: !b,
     })
   }
 
@@ -315,10 +317,21 @@ export default class SwapComponent extends PureComponent {
   render() {
     const { peer, tokenItems, history, intl: { locale } } = this.props
     const {
-      swap, SwapComponent, currencyData, isAmountMore, ethData, continueSwap, enoughBalance, hideAll,
-      depositWindow, ethAddress, isShowingBitcoinScript, requestToFaucetSended, stepToHide,
+      swap,
+      SwapComponent,
+      currencyData,
+      isAmountMore,
+      ethData,
+      continueSwap,
+      enoughBalance,
+      depositWindow,
+      ethAddress,
+      isShowingBitcoinScript,
+      isShowDevInformation,
+      requestToFaucetSended,
+      stepToHideб
     } = this.state
-    console.log('swap', swap.flow)
+
     if (!swap || !SwapComponent || !peer || !isAmountMore) {
       return null
     }
