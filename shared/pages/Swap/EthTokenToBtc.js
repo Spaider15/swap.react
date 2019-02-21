@@ -64,15 +64,6 @@ export default class EthTokenToBtc extends Component {
         clearInterval(this.signTimer)
       }
     }, 3000)
-
-    this.confirmBtcTimer = setInterval(() => {
-      if (this.state.flow.step === 3) {
-        this.confirmBTCScriptChecked()
-      } else {
-        clearInterval(this.confirmBtcTimer)
-      }
-    }, 3000)
-
     this.requestMaxAllowance()
   }
 
@@ -115,10 +106,6 @@ export default class EthTokenToBtc extends Component {
     this.setState(() => ({
       signed: true,
     }))
-  }
-
-  confirmBTCScriptChecked = () => {
-    this.swap.flow.verifyBtcScript()
   }
 
   toggleBitcoinScript = () => {

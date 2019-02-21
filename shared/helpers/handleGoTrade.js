@@ -12,7 +12,7 @@ const isSwapExist = ({ currency, decline, i }) => {
     && declineSwap.isMy === false
     && declineSwap.flow.state.isFinished === false
     && !declineSwap.flow.state.isRefunded) {
-      return true
+    return true
   } else {
     return false
   }

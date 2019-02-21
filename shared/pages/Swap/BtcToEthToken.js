@@ -76,16 +76,6 @@ export default class BtcToEthToken extends Component {
         clearInterval(this.confirmAddressTimer)
       }
     }, 3000)
-
-    this.ParticipantTimer = setInterval(() => {
-      if (this.state.flow.isParticipantSigned && this.state.destinationBuyAddress) {
-        this.submitSecret()
-      }
-      else {
-        clearInterval(this.ParticipantTimer)
-      }
-    }, 3000)
-
   }
 
   componentDidUpdate(prevProps, prevState) {
@@ -139,11 +129,6 @@ export default class BtcToEthToken extends Component {
     this.setState({
       flow: values,
     })
-  }
-
-  submitSecret = () => {
-    const { secret } = this.state
-    this.swap.flow.submitSecret(secret)
   }
 
   confirmAddress = () => {

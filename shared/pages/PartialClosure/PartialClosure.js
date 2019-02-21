@@ -187,12 +187,16 @@ export default class PartialClosure extends Component {
   handleGoTrade = () => {
     const { intl: { locale }, decline } = this.props
     const { haveCurrency } = this.state
-    for (let i = 0; i <= this.state.ir; i++) {
-      if (helpers.handleGoTrade.isSwapExist({ currency: haveCurrency, decline, i })) {
-        this.handleDeclineOrdersModalOpen(i)
-      } else {
-        this.sendRequest()
+    if (decline.length > 0) {
+      for (let i = 0; i <= this.state.ir; i++) {
+        if (helpers.handleGoTrade.isSwapExist({ currency: haveCurrency, decline, i })) {
+          this.handleDeclineOrdersModalOpen(i)
+        } else {
+          this.sendRequest()
+        }
       }
+    } else {
+      this.sendRequest()
     }
   }
 

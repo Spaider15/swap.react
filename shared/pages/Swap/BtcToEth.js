@@ -46,14 +46,6 @@ export default class BtcToEth extends Component {
   componentDidMount() {
     const { flow: { isSignFetching, isMeSigned, step, isParticipantSigned } } = this.state
     this.changePaddingValue()
-    this.ParticipantTimer = setInterval(() => {
-      if (this.state.flow.isParticipantSigned && this.state.destinationBuyAddress) {
-        this.submitSecret()
-      }
-      else {
-        clearInterval(this.ParticipantTimer)
-      }
-    }, 3000)
   }
 
   componentWillUnmount() {
@@ -104,11 +96,6 @@ export default class BtcToEth extends Component {
   confirmAddress = () => {
     this.swap.setDestinationBuyAddress(this.state.destinationBuyAddress)
     this.setState({ destinationAddressTimer : false })
-  }
-
-  submitSecret = () => {
-    const { secret } = this.state
-    this.swap.flow.submitSecret(secret)
   }
 
   updateBalance = () => {

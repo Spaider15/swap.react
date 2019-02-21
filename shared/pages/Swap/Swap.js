@@ -112,7 +112,7 @@ export default class SwapComponent extends PureComponent {
         SwapComponent,
         currencyData,
         ethAddress: ethData[0].address,
-        stepToHide: swap.sellCurrency === 'BTC' ? 5 : 4,
+        stepToHide: swap.sellCurrency === 'BTC' ? 2 : 3,
       })
 
     } catch (error) {
@@ -121,7 +121,9 @@ export default class SwapComponent extends PureComponent {
       this.props.history.push(localisedUrl(links.exchange))
     }
     this.saveThisSwap(orderId)
-    this.setSaveSwapId(orderId)
+    if (!this.props.decline.includes(orderId)) {
+      this.setSaveSwapId(orderId)
+    }
   }
 
   componentDidMount() {
@@ -143,7 +145,7 @@ export default class SwapComponent extends PureComponent {
       }, 5000)
     }
     if (isFinished) {
-      this.deleteThisSwap(this.props.location.pathname)
+      this.deleteThisSwap(id)
     }
     this.getSwap()
   }
@@ -154,46 +156,22 @@ export default class SwapComponent extends PureComponent {
     }
   }
 
-  deleteThisSwap = (id) => {
-    actions.core.forgetOrders(id)
+  deleteThisSwap = (orderId) => {
+    actions.core.forgetOrders(orderId)
     if (this.props.peer === this.state.swap.owner.peer) {
-      actions.core.removeOrder(id)
-    }
-  }
-
-  cancelSwapBtc = () => {
-    let { match : { params : { orderId } }, history, location: { pathname }, intl: { locale } } = this.props
-    const { swap: { flow: { state: { step } }, sellCurrency }, swap } = this.state
-
-    this.state.swap.flow.isClosed()
-
-    if (step < 2) {
-      this.deleteThisSwap(orderId, pathname)
-      this.setState(() => ({
-        hideAll: true,
-      }))
-    }
-    if (step >= 2 && step <= 5) {
-      swap.flow.getRefundTxHex()
-      this.deleteThisSwap(orderId, pathname)
-      this.setState(() => ({
-        hideAll: true,
-      }))
+      actions.core.removeOrder(orderId)
     }
   }
 
   cancelSwap = () => {
     let { match : { params : { orderId } }, history, location: { pathname }, intl: { locale } } = this.props
-    const { swap: { flow: { state: { step } }, sellCurrency } } = this.state
+    const { swap: { flow: { state: { step } }, sellCurrency }, swap } = this.state
 
     this.state.swap.flow.isClosed()
-
-    if (step <= 4) {
-      this.deleteThisSwap(orderId, pathname)
-      this.setState(() => ({
-        hideAll: true,
-      }))
-    }
+    this.deleteThisSwap(orderId)
+    this.setState(() => ({
+      hideAll: true,
+    }))
   }
 
   receiveMessage = () => {
@@ -324,6 +302,12 @@ export default class SwapComponent extends PureComponent {
     localStorage.setItem(constants.localStorage.saveSwap, rememberedSwaps)
   }
 
+  goWallet = () => {
+    const { intl: { locale } } = this.props
+    this.deleteThisSwap(this.state.swap.id)
+    this.props.history.push(localisedUrl(locale, '/'))
+  }
+
   render() {
     const { peer, tokenItems, history, intl: { locale } } = this.props
     const {
@@ -352,7 +336,7 @@ export default class SwapComponent extends PureComponent {
       <Fragment>
         {hideAll ?
           <div>
-            <h3 styleName="canceled" /* eslint-disable-line */ onClick={() => history.push(localisedUrl(locale, '/'))}>
+            <h3 styleName="canceled" /* eslint-disable-line */ onClick={this.goWallet}>
               <FormattedMessage id="swappropgress327" defaultMessage="this Swap is canceled" />
             </h3>
             <div>
@@ -398,9 +382,16 @@ export default class SwapComponent extends PureComponent {
               continueSwap={continueSwap}
               requestToFaucetSended={requestToFaucetSended}
             >
-              {swap.flow.state.step <= stepToHide &&
-                <h1 /* eslint-disable-line */ onClick={swap.sellCurrency === 'BTC' ? this.cancelSwapBtc : this.cancelSwap} styleName="cancelSwap">
+              {
+                swap.flow.state.step <= stepToHide || !enoughBalance &&
+                <h1 /* eslint-disable-line */ onClick={this.cancelSwap} styleName="cancelSwap">
                   <FormattedMessage id="swapjs290" defaultMessage="Cancel swap" />
+                </h1>
+              }
+              {
+                swap.flow.state.step >= 7 &&
+                <h1 /* eslint-disable-line */ onClick={this.goWallet} styleName="cancelSwap">
+                  <FormattedMessage id="swapjs394" defaultMessage="Delete the swap" />
                 </h1>
               }
               <Share flow={swap.flow} />

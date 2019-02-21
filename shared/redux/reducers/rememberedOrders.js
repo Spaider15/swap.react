@@ -2,21 +2,21 @@ const initialState = {
   savedOrders: JSON.parse(localStorage.getItem('savedOrders')) || [],
 }
 
-const savedOrders = (state, payload) => ({
+const savedOrders = (state, orderId) => ({
   savedOrders: [
     ...state.savedOrders,
-    payload,
+    orderId,
   ],
 })
 
-const forgetOrders = (state, payload) => ({
+const forgetOrders = (state, orderId) => ({
   ...state,
-  savedOrders: state.savedOrders.filter(item => item !== payload),
+  savedOrders: state.savedOrders.filter(item => item !== orderId),
 })
 
-const getOrderIntheProcess = (state, payload) => ({
+const getOrderIntheProcess = (state, orderId) => ({
   ...state,
-  savedOrders: state.savedOrders.filter(item => item === payload),
+  savedOrders: state.savedOrders.filter(item => item === orderId),
 })
 
 export {

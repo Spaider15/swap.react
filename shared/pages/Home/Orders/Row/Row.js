@@ -27,7 +27,11 @@ import SwapApp from 'swap.app'
 @injectIntl
 @connect({
   peer: 'ipfs.peer',
-})
+}, ({
+  rememberedOrders,
+}) => ({
+  decline: rememberedOrders.savedOrders,
+}))
 @cssModules(styles)
 export default class Row extends Component {
 
@@ -83,13 +87,16 @@ export default class Row extends Component {
 
   CheckDeclineOrders = (orderId, currency, checkCurrency) => {
     const { intl: { locale }, decline } = this.props
-
-    for (let i = 0; i <= this.state.ir; i++) {
-      if (helpers.handleGoTrade.isSwapExist({ currency: checkCurrency, decline, i })) {
-        this.handleDeclineOrdersModalOpen(i)
-      } else {
-        this.sendRequest(orderId, currency)
+    if (decline.length > 0) {
+      for (let i = 0; i <= this.state.ir; i++) {
+        if (helpers.handleGoTrade.isSwapExist({ currency: checkCurrency, decline, i })) {
+          this.handleDeclineOrdersModalOpen(i)
+        } else {
+          this.sendRequest(orderId, currency)
+        }
       }
+    } else {
+      this.sendRequest(orderId, currency)
     }
   }
 

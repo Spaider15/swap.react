@@ -136,10 +136,8 @@ export default class SwapProgress extends Component {
     } = this.state
 
     const progress = Math.floor(360 / (swap.flow.steps.length - 1) * this.state.flow.step)
-
     const finishIcon = <img src={finishSvg} alt="finishIcon" />
-
-
+    console.log(flow.step)
     return (
       <div styleName="overlay">
         <div styleName="container">
@@ -253,12 +251,12 @@ export default class SwapProgress extends Component {
               </Fragment>
               }
               {flow.step === 2 && swap.sellCurrency === 'BTC' &&
-                <Button brand onClick={this.submitSecret()} >
+                <Button brand onClick={this.submitSecret} >
                   <FormattedMessage id="swapFinishedGoHome289" defaultMessage="Submit the Secret" />
                 </Button>
               }
               {flow.step === 3 && currenciesETHTransaction.includes(swap.sellCurrency) &&
-                <Button brand onClick={this.confirmBTCScriptChecked()} >
+                <Button brand onClick={this.confirmBTCScriptChecked} >
                   <FormattedMessage id="swapFinishedGoHome298" defaultMessage="Everything is OK. Continue" />
                 </Button>
               }
