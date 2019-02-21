@@ -44,6 +44,7 @@ const declineRequest = (orderId, participantPeer) => {
 
 const rememberOrder = (orderId) => {
   reducers.rememberedOrders.savedOrders(orderId)
+  localStorage.setItem(constants.localStorage.savedOrders, JSON.stringify(getState().rememberedOrders.savedOrders))
   return {
     orderId,
   }
@@ -56,8 +57,8 @@ const rememberSwap = (swap) => {
   }
 }
 
-const forgetOrders = (link) => {
-  reducers.rememberedOrders.forgetOrders(link)
+const forgetOrders = (orderId) => {
+  reducers.rememberedOrders.forgetOrders(orderId)
   localStorage.setItem(constants.localStorage.savedOrders, JSON.stringify(getState().rememberedOrders.savedOrders))
 }
 

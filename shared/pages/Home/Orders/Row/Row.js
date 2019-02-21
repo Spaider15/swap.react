@@ -9,7 +9,7 @@ import { isMobile } from 'react-device-detect'
 import cssModules from 'react-css-modules'
 import styles from './Row.scss'
 
-import { links, constants } from 'helpers'
+import helpers, { links, constants } from 'helpers'
 import { Link, Redirect } from 'react-router-dom'
 
 import Avatar from 'components/Avatar/Avatar'
@@ -21,6 +21,7 @@ import PAIR_TYPES from 'helpers/constants/PAIR_TYPES'
 import RequestButton from '../RequestButton/RequestButton'
 import { FormattedMessage, injectIntl } from 'react-intl'
 import { localisedUrl } from 'helpers/locale'
+import SwapApp from 'swap.app'
 
 
 @injectIntl
@@ -77,6 +78,29 @@ export default class Row extends Component {
     if (confirm('Are your sure ?')) {
       actions.core.removeOrder(orderId)
       actions.core.updateCore()
+    }
+  }
+
+  CheckDeclineOrders = (orderId, currency, checkCurrency) => {
+    const { intl: { locale }, decline } = this.props
+
+    for (let i = 0; i <= this.state.ir; i++) {
+      if (helpers.handleGoTrade.isSwapExist({ currency: checkCurrency, decline, i })) {
+        this.handleDeclineOrdersModalOpen(i)
+      } else {
+        this.sendRequest(orderId, currency)
+      }
+    }
+  }
+
+  handleDeclineOrdersModalOpen = (i) => {
+    const orders = SwapApp.shared().services.orders.items
+    const declineSwap = actions.core.getSwapById(this.props.decline[i])
+
+    if (declineSwap !== undefined) {
+      actions.modals.open(constants.modals.DeclineOrdersModal, {
+        declineSwap,
+      })
     }
   }
 
@@ -196,7 +220,11 @@ export default class Row extends Component {
                       ) : (
                         <RequestButton
                           disabled={balance >= Number(buyAmount)}
-                          onClick={() => this.sendRequest(id, isMy ? sellCurrency : buyCurrency)}
+                          onClick={() => this.CheckDeclineOrders(
+                            id,
+                            isMy ? sellCurrency : buyCurrency,
+                            type === PAIR_TYPES.BID ? sellCurrency : buyCurrency,
+                          )}
                           data={{ type, amount, main, total, base }}
                         >
                           {type === PAIR_TYPES.BID ? <FormattedMessage id="Row2061" defaultMessage="SELL" /> : <FormattedMessage id="Row206" defaultMessage="BUY" />}

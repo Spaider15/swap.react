@@ -30,13 +30,13 @@ const title = defineMessages({
 export default class DeclineOrdersModal extends Component {
 
   goToDecline = () => {
-    const { intl: { locale }, data: { declineOrder: { sellCurrency, buyCurrency, id } }, history } = this.props
+    const { data: { declineSwap: { sellCurrency, buyCurrency, id } }, history } = this.props /* eslint-disable-line */   
     history.push(localisedUrl(`swaps/${sellCurrency}-${buyCurrency}/${id}`))
     actions.modals.close('DeclineOrdersModal')
   }
 
   render() {
-    const { intl: { locale }, data: { declineOrder }, intl } = this.props
+    const { intl: { locale }, data: { declineSwap }, intl } = this.props
 
     return (
       <Modal name="DeclineOrdersModal" title={intl.formatMessage(title.downloadModal)}>

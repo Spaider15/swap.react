@@ -52,6 +52,7 @@ const isWidgetBuild = config && config.isWidget
 @connect(({
   currencies,
   addSelectedItems,
+  rememberedOrders,
   core: { orders },
   user: { ethData, btcData, /* bchData, */ tokensData, eosData, telosData, nimData, usdtData, ltcData },
 }) => ({
@@ -60,6 +61,7 @@ const isWidgetBuild = config && config.isWidget
   orders: filterIsPartial(orders),
   currenciesData: [ ethData, btcData, eosData, telosData, /* bchData, */ ltcData, usdtData /* nimData */ ],
   tokensData: [ ...Object.keys(tokensData).map(k => (tokensData[k])) ],
+  decline: rememberedOrders.savedOrders,
 }))
 @CSSModules(styles, { allowMultiple: true })
 export default class PartialClosure extends Component {
@@ -81,7 +83,7 @@ export default class PartialClosure extends Component {
     }
   }
 
-  constructor({ tokensData, currenciesData, match: { params: { buy, sell } }, intl: { locale }, history, ...props }) {
+  constructor({ tokensData, currenciesData, match: { params: { buy, sell } }, intl: { locale }, history, decline, ...props }) {
     super()
 
     const sellToken = sell || ((!isWidgetBuild) ? 'eth' : 'btc')
@@ -99,6 +101,7 @@ export default class PartialClosure extends Component {
     })
 
     this.state = {
+      ir: decline.length - 1,
       haveCurrency: sellToken,
       getCurrency: buyToken,
       haveAmount: 0,
@@ -178,6 +181,29 @@ export default class PartialClosure extends Component {
       }))
     } catch (e) {
       console.log('Cryptonator offline')
+    }
+  }
+
+  handleGoTrade = () => {
+    const { intl: { locale }, decline } = this.props
+    const { haveCurrency } = this.state
+    for (let i = 0; i <= this.state.ir; i++) {
+      if (helpers.handleGoTrade.isSwapExist({ currency: haveCurrency, decline, i })) {
+        this.handleDeclineOrdersModalOpen(i)
+      } else {
+        this.sendRequest()
+      }
+    }
+  }
+
+  handleDeclineOrdersModalOpen = (i) => {
+    const orders = SwapApp.shared().services.orders.items
+    const declineSwap = actions.core.getSwapById(this.props.decline[i])
+
+    if (declineSwap !== undefined) {
+      actions.modals.open(constants.modals.DeclineOrdersModal, {
+        declineSwap,
+      })
     }
   }
 
@@ -848,7 +874,7 @@ export default class PartialClosure extends Component {
               )
             }
             <div styleName="rowBtn" className={isWidget ? 'rowBtn' : ''}>
-              <Button styleName="button" brand onClick={this.sendRequest} disabled={!canDoOrder}>
+              <Button styleName="button" brand onClick={this.handleGoTrade} disabled={!canDoOrder}>
                 <FormattedMessage id="partial541" defaultMessage="Exchange now" />
               </Button>
               <Button styleName="button" gray onClick={() => this.handlePush(isWidgetLink)} >

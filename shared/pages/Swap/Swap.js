@@ -32,12 +32,14 @@ const isWidgetBuild = config && config.isWidget
 @connect(({
   user: { ethData, btcData, /* bchData, */ tokensData, eosData, telosData, nimData, usdtData, ltcData },
   ipfs: { peer },
+  rememberedOrders,
   rememberedSwaps,
 }) => ({
   items: [ ethData, btcData, eosData, telosData, /* bchData, */ ltcData, usdtData /* nimData */ ],
   tokenItems: [ ...Object.keys(tokensData).map(k => (tokensData[k])) ],
   errors: 'api.errors',
   checked: 'api.checked',
+  decline: rememberedOrders.savedOrders,
   rememberedSwaps,
   peer,
 }))
@@ -46,6 +48,7 @@ const isWidgetBuild = config && config.isWidget
 export default class SwapComponent extends PureComponent {
 
   state = {
+    stepToHide: 0,
     swap: null,
     isMy: false,
     hideAll: false,
@@ -145,8 +148,10 @@ export default class SwapComponent extends PureComponent {
     this.getSwap()
   }
 
-  saveThisSwap = (orderId, pathname) => {
-    actions.core.rememberOrder(orderId)
+  saveThisSwap = (orderId) => {
+    if (!this.props.decline.includes(orderId)) {
+      actions.core.rememberOrder(orderId)
+    }
   }
 
   deleteThisSwap = (id) => {
@@ -164,7 +169,9 @@ export default class SwapComponent extends PureComponent {
 
     if (step < 2) {
       this.deleteThisSwap(orderId, pathname)
-      history.push(localisedUrl(locale, '/'))
+      this.setState(() => ({
+        hideAll: true,
+      }))
     }
     if (step >= 2 && step <= 5) {
       swap.flow.getRefundTxHex()
@@ -183,6 +190,9 @@ export default class SwapComponent extends PureComponent {
 
     if (step <= 4) {
       this.deleteThisSwap(orderId, pathname)
+      this.setState(() => ({
+        hideAll: true,
+      }))
     }
   }
 
@@ -317,6 +327,7 @@ export default class SwapComponent extends PureComponent {
   render() {
     const { peer, tokenItems, history, intl: { locale } } = this.props
     const {
+      hideAll,
       swap,
       SwapComponent,
       currencyData,
@@ -329,12 +340,13 @@ export default class SwapComponent extends PureComponent {
       isShowingBitcoinScript,
       isShowDevInformation,
       requestToFaucetSended,
-      stepToHideб
+      stepToHide,
     } = this.state
 
     if (!swap || !SwapComponent || !peer || !isAmountMore) {
       return null
     }
+
     const isFinished = (swap.flow.state.step >= (swap.flow.steps.length - 1))
     return (
       <Fragment>
@@ -343,31 +355,33 @@ export default class SwapComponent extends PureComponent {
             <h3 styleName="canceled" /* eslint-disable-line */ onClick={() => history.push(localisedUrl(locale, '/'))}>
               <FormattedMessage id="swappropgress327" defaultMessage="this Swap is canceled" />
             </h3>
-            {swap.flow.state.refundTxHex ?
-              <div>
-                <a
-                  href="https://wiki.swap.online/faq/my-swap-got-stuck-and-my-bitcoin-has-been-withdrawn-what-to-do/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                >
-                  <FormattedMessage id="swappropgress332" defaultMessage="How to refund your money ?" />
-                </a>
-                {' '}
-                <p>
-                  <FormattedMessage id="swappropgress333" defaultMessage="Refund hex transaction: " />
-                </p>
-                <code>{swap.flow.state.refundTxHex}</code>
-              </div> :
-              <h3 styleName="refHex">
-                <FormattedMessage
-                  id="swappropgress345"
-                  defaultMessage="Refund transaction is creating {loader}"
-                  values={{
-                    loader: <a styleName="loaderHolder"><InlineLoader /></a>,
-                  }}
-                />
-              </h3>
-            }
+            <div>
+              {swap.flow.state.refundTxHex ?
+                <div>
+                  <a
+                    href="https://wiki.swap.online/faq/my-swap-got-stuck-and-my-bitcoin-has-been-withdrawn-what-to-do/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    <FormattedMessage id="swappropgress332" defaultMessage="How to refund your money ?" />
+                  </a>
+                  {' '}
+                  <p>
+                    <FormattedMessage id="swappropgress333" defaultMessage="Refund hex transaction: " />
+                  </p>
+                  <code>{swap.flow.state.refundTxHex}</code>
+                </div> :
+                <h3 styleName="refHex">
+                  {swap.flow.state.refundTxHex === null && <FormattedMessage
+                    id="swappropgress345"
+                    defaultMessage="Refund transaction is creating {loader}"
+                    values={{
+                      loader: <a styleName="loaderHolder"><InlineLoader /></a>,
+                    }}
+                  />}
+                </h3>
+              }
+            </div>
           </div> :
           <div styleName="swap">
             <SwapComponent

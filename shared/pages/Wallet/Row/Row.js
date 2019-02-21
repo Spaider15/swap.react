@@ -1,7 +1,7 @@
 import React, { Component, Fragment } from 'react'
 import actions from 'redux/actions'
 import { connect } from 'redaction'
-import { constants, links } from 'helpers'
+import helpers, { constants, links } from 'helpers'
 import config from 'app-config'
 import { isMobile } from 'react-device-detect'
 
@@ -53,6 +53,7 @@ import SwapApp from 'swap.app'
 export default class Row extends Component {
 
   state = {
+    ir: this.props.decline.length - 1,
     isBalanceFetching: false,
     viewText: false,
     tradeAllowed: false,
@@ -230,34 +231,27 @@ export default class Row extends Component {
   }
 
   handleGoTrade = (currency) => {
-    const { intl: { locale } } = this.props
+    const { intl: { locale }, decline } = this.props
+    const pair = currency.toUpperCase() === 'btc' ? 'eth' : 'btc'
+
+    for (let i = 0; i <= this.state.ir; i++) {
+      if (helpers.handleGoTrade.isSwapExist({ currency, decline, i })) {
+        this.handleDeclineOrdersModalOpen(i)
+      } else {
+        window.scrollTo(0, 0)
+        this.props.history.push(localisedUrl(locale, `/exchange/${currency.toLowerCase()}-to-${pair}`))      }
+    }
+  }
+
+  handleDeclineOrdersModalOpen = (i) => {
     const orders = SwapApp.shared().services.orders.items
-    for (let i = 0; i <= this.props.decline.length; i++) {
-      this.getSwap(i, currency, locale, orders)
+    const declineSwap = actions.core.getSwapById(this.props.decline[i])
+
+    if (declineSwap !== undefined) {
+      actions.modals.open(constants.modals.DeclineOrdersModal, {
+        declineSwap,
+      })
     }
-  }
-
-  getSwap = (i, currency, locale, orders) => {
-    const pair = currency.toLowerCase() === 'btc' ? 'eth' : 'btc'
-
-    const declineOrder = orders
-      .filter(order => order.id === this.props.decline[i])
-      .filter(order => order.sellCurrency === currency.toUpperCase())[0]
-
-    if (declineOrder) {
-      this.handleDeclineOrdersModalOpen(declineOrder, orders, currency)
-    } else {
-      window.scrollTo(0, 0)
-      this.props.history.push(localisedUrl(locale, `/exchange/${currency.toLowerCase()}-to-${pair}`))
-    }
-  }
-
-  handleDeclineOrdersModalOpen = (declineOrder, orders, currency) => {
-    actions.modals.open(constants.modals.DeclineOrdersModal, {
-      declineOrder,
-      orders,
-      currency,
-    })
   }
 
   handleMarkCoinAsHidden = (coin) => {
